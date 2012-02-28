@@ -26,26 +26,59 @@
 	(convert xml noset to string: )
 	___
 
-	<xsl:apply-templates select="node | node[text()"/>
+	<xsl:apply-templates select="node | node[text()]"/>
 
 -->
 	<xsl:variable name="q">
 		<xsl:text>"</xsl:text>
 	</xsl:variable>
+	<xsl:variable name="empty"/>
+
+
+	<xsl:template match="*" mode="selfclosetag">
+		<xsl:text>&lt;</xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:apply-templates select="@*" mode="attribs"/>
+		<xsl:text>/&gt;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="*" mode="opentag">
+		<xsl:text>&lt;</xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:apply-templates select="@*" mode="attribs"/>
+		<xsl:text>&gt;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="*" mode="closetag">
+		<xsl:text>&lt;/</xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:text>&gt;</xsl:text>
+	</xsl:template>
 
 	<xsl:template match="* | text()" mode="nodetostring">
-		<xsl:if test="node()">
-			<xsl:text>&lt;</xsl:text>
-			<xsl:value-of select="name()"/>
-			<xsl:apply-templates select="@*" mode="attribs"/>
-			<xsl:text>&gt;</xsl:text>
-		</xsl:if>
-		<xsl:value-of select="text()"/>
-		<xsl:apply-templates select="* | text()" mode="nodetostring"/>
-		<xsl:if test="node()">
-			<xsl:text>&lt;/</xsl:text><xsl:value-of select="name()"/>
-			<xsl:text>&gt;</xsl:text>
-		</xsl:if>
+		<xsl:choose>
+			<xsl:when test="boolean(name())">
+				<xsl:choose>
+					<!--
+						 if element is not empty
+					-->
+					<xsl:when test="normalize-space(.) != $empty or *">
+						<xsl:apply-templates select="." mode="opentag"/>
+							<xsl:apply-templates select="* | text()" mode="nodetostring"/>
+						<xsl:apply-templates select="." mode="closetag"/>
+					</xsl:when>
+					<!--
+						 assuming emty tags are self closing, e.g. <img/>, <source/>, <input/>
+					-->
+					<xsl:otherwise>
+						<xsl:apply-templates select="." mode="selfclosetag"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="."/>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 	<xsl:template match="@*" mode="attribs">
@@ -59,3 +92,4 @@
 	</xsl:template>
 
 </xsl:stylesheet>
+
