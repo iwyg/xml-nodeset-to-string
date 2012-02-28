@@ -17,11 +17,11 @@ ___
 	<xsl:variable name="somelink">
 		<a href="{url}" class="some-class"><xsl:value-of select="name"/></a>
 	</xsl:variable>
-	<xsl:apply-templates select="exsl:node-set($somelink)/* | exsl:node-set($some-link)/text()"/>
+	<xsl:apply-templates select="exsl:node-set($somelink)/* | exsl:node-set($some-link)/text()" mode="nodetostring"/>
 ___
 
 (convert xml noset to string: )
 ___
 
-	<xsl:apply-templates select="node | node[text()"/>
+	<xsl:apply-templates select="node | node[text()" mode="nodetostring"/>
 
